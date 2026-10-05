@@ -6,8 +6,13 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 #if defined(CONFIG_LED_SUBSYSTEM)
 
-#define LED_NODE DT_ALIAS(led0)
+#define LED_NODE DT_ALIAS(led1)
+
+#define HEARTBEAT_LED_NODE DT_ALIAS(app_led)
+
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED_NODE, gpios);
+static const struct gpio_dt_spec heartbeat_led = GPIO_DT_SPEC_GET(HEARTBEAT_LED_NODE, gpios);
+
 
 #if defined(CONFIG_BLINK_SLEEP_250MS)
 static constexpr int blink_interval_ms = 250;
@@ -61,21 +66,42 @@ static int show_phase(int start_brightness, int end_brightness)
     return 0;
 }
 
+static int blink_heartbeat(void)
+{
+    while (1) {
+        LOG_INF("Heartbeat LED state: ON");
+        if (gpio_pin_set_dt(&heartbeat_led, 1) < 0) return 0;
+        k_sleep(K_MSEC(CONFIG_APP_HEARTBEAT_PERIOD_MS));
+        LOG_INF("Heartbeat LED state: OFF");
+        if (gpio_pin_set_dt(&heartbeat_led, 0) < 0) return 0;
+        k_sleep(K_MSEC(CONFIG_APP_HEARTBEAT_PERIOD_MS));
+    }
+    return 0;
+}
+
+
+
 #endif
 
 int main(void)
 {
 #if defined(CONFIG_LED_SUBSYSTEM)
-    if (!gpio_is_ready_dt(&led)) return 0;
-    if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE) < 0) return 0;
+    if (!gpio_is_ready_dt(&led) || !gpio_is_ready_dt(&heartbeat_led)) return 0;
+    if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE) < 0 || gpio_pin_configure_dt(&heartbeat_led, GPIO_OUTPUT_INACTIVE) < 0) return 0;
+
 
     while (1) {
-        LOG_INF("LED state: ON");
-        if (show_phase(0, CONFIG_LED_BRIGHTNESS) < 0) return 0;
+        // LOG_INF("LED state: ON");
+        // if (show_phase(0, CONFIG_LED_BRIGHTNESS) < 0) return 0;
 
-        LOG_INF("LED state: OFF");
-        if (show_phase(CONFIG_LED_BRIGHTNESS, 0) < 0) return 0;
+        // LOG_INF("LED state: OFF");
+        // if (show_phase(CONFIG_LED_BRIGHTNESS, 0) < 0) return 0;
+        if (blink_heartbeat() < 0) return 0;
+
+
+
     }
+
 #endif
     return 0;
 }

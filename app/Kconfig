@@ -45,6 +45,11 @@ config LED_DEBUG
 config CUSTOM_BLINK_PATTERN
   bool "Custom blink pattern"
   default n
+
+config APP_HEARTBEAT_PERIOD_MS
+  int "Heartbeat period (ms)"
+  range 100 2000
+  default 500
 endmenu
 
 endif #LED_ADVANCED
