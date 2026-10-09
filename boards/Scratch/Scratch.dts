@@ -1,0 +1,16 @@
+/dts-v1/;
+
+#include <nordic/nrf52840_qiaa.dtsi>
+#include <nordic/nrf52840_partition.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+    model = "Scratch";
+    compatible = "iomico,our-board";
+
+    chosen {
+        zephyr,flash = &flash0;
+        zephyr,sram = &sram0; /* Point to regular RAM */
+        zephyr,code-partition = &slot0_partition; /* Regular application slot */
+    };
+};
